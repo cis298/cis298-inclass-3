@@ -43,6 +43,8 @@ public class CrimeFragment extends Fragment {
         // This inflating takes the XML for the layout and and turns it into
         // Java code. This MUST be done if we plan to try and get access to the
         // widgets in the layout.
+        // This is us doing the manual work of inflating. In Activities, this is done
+        // via the setContent method that Activities have.
         View v = inflater.inflate(R.layout.fragment_crime, container, false);
 
         // Now it is time to setup any events for the widgets that exist on that layout file.
