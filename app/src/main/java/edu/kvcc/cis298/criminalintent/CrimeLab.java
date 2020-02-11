@@ -19,8 +19,10 @@ public class CrimeLab {
 
     // If someone wants an instance of CrimeLab, they
     // MUST use this get method that will either
-    // return the existing instance, or instanciate a
+    // return the existing instance, or instantiate a
     // new one and store it in the private static variable.
+    // NOTE: Right now we do not need this context that
+    // is being sent in. However, later on we will, so it is here now.
     public static CrimeLab get(Context context) {
         if (sCrimeLab == null) {
             sCrimeLab = new CrimeLab(context);
@@ -32,6 +34,8 @@ public class CrimeLab {
     // Notice that it is Private!
     // That way other classes can not make instances
     // of this class. They must instead use the get method.
+    // NOTE: Right now we do not need this context that
+    // is being sent in. However, later on we will, so it is here now.
     private CrimeLab(Context context) {
         mCrimes = new ArrayList<>();
         for (int i = 0; i < 100; i++)
