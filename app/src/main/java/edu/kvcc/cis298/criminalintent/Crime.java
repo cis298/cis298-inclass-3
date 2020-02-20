@@ -1,5 +1,6 @@
 package edu.kvcc.cis298.criminalintent;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
