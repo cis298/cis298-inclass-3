@@ -18,17 +18,33 @@ import java.util.UUID;
 
 public class CrimeFragment extends Fragment {
 
+    // Key that will be used to store the crime id into a Bundle
+    // object that will be used as fragment arguments
+    private static final String ARG_CRIME_ID = "crime_id";
+
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
     private CheckBox mSolvedCheckbox;
 
+    // Method that can be called by an activity to get a new
+    // instance of this fragment with the proper arguments
+    // added to the Bundle that this fragment will get as arguments.
+    public static CrimeFragment newInstance(UUID crimeId) {
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_CRIME_ID, crimeId);
+
+        CrimeFragment fragment = new CrimeFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Fetch out the UUID from the Intent that was used to
-        // start this fragment's hosting activity and then this
-        // fragment.
+        // Fetch out the UUID from the Bundle object that is
+        // used as fragment arguments. The Bundle can be accessed
+        // by using the getArguments() method.
 
         // In order to get the UUID out of the Intent, we need to
         // use the getSerializableExtra method. That method is used
@@ -37,8 +53,8 @@ public class CrimeFragment extends Fragment {
         // object that gets stored in the intent must implement
         // the serializable interface in order to be able to be
         // placed inside the Intent with a putExtra.
-        UUID crimeId = (UUID) getActivity().getIntent()
-                .getSerializableExtra(CrimeActivity.EXTRA_CRIME_ID);
+        UUID crimeId = (UUID) getArguments()
+                .getSerializable(ARG_CRIME_ID);
         // Find the correct crime from the Singleton by using
         // the getCrime getter and sending it the crime id to find.
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);

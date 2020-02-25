@@ -56,6 +56,12 @@ public class CrimeListFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+    }
+
     // Method to update the recycler view with data
     private void updateUI() {
         // Get the singleton of the Crimelab. Send in the hosting activity
@@ -63,10 +69,20 @@ public class CrimeListFragment extends Fragment {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         // Get the list of crimes
         List<Crime> crimes = crimeLab.getCrimes();
-        // Create a new adapter
-        mAdapter = new CrimeAdapter(crimes);
-        // Set the adapter on the RecyclerView
-        mCrimeRecyclerView.setAdapter(mAdapter);
+
+        // Check to see if we already have an adapter.
+        // If so, we only need to notify the RecyclerView
+        // that its dataset has changed rather than make a new adapter.
+        if (mAdapter == null) {
+            // Create a new adapter
+            mAdapter = new CrimeAdapter(crimes);
+            // Set the adapter on the RecyclerView
+            mCrimeRecyclerView.setAdapter(mAdapter);
+        } else {
+            // Already have an adapter.
+            // Just need to tell it to update its data.
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
     // This will be an inner class that our RecyclerView needs to operate.
