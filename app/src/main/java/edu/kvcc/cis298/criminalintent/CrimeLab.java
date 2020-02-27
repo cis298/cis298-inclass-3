@@ -1,9 +1,15 @@
 package edu.kvcc.cis298.criminalintent;
 
 import android.content.Context;
+import android.util.Log;
 
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Scanner;
 import java.util.UUID;
 
 public class CrimeLab {
@@ -16,6 +22,9 @@ public class CrimeLab {
 
     // The underlying List of Crimes
     private List<Crime> mCrimes;
+
+    // Boolean for whether or not we have already loaded the data
+    private boolean mDataLoadedOnce;
 
     // If someone wants an instance of CrimeLab, they
     // MUST use this get method that will either
@@ -38,6 +47,11 @@ public class CrimeLab {
     // is being sent in. However, later on we will, so it is here now.
     private CrimeLab(Context context) {
         mCrimes = new ArrayList<>();
+    }
+
+    // Moved the default crimes into a separate method that can be
+    // used to add some default crimes if desired.
+    public void addDefaultCrimes() {
         for (int i = 0; i < 100; i++)
         {
             Crime crime = new Crime();
@@ -60,4 +74,71 @@ public class CrimeLab {
         }
         return null;
     }
+
+    // Getter to see if the list is empty
+    public boolean isEmpty() {
+        return mCrimes.isEmpty();
+    }
+
+    // Getter to see if the data has already been loaded once.
+    public boolean isDataLoadedOnce() {
+        return mDataLoadedOnce;
+    }
+
+    // Method to load the beverage list from a CSV file
+    public void loadCrimeList(InputStream inputStream) {
+        // Define a scanner
+        try (Scanner scanner = new Scanner(inputStream)) {
+            // While the scanner has another line to read
+            while (scanner.hasNextLine()) {
+                // Get the next line and split it into parts
+                String line = scanner.nextLine();
+                String parts[] = line.split(",");
+
+                // Assign each part to a local var
+                String id = parts[0];
+                String title = parts[1];
+                String dateString = parts[2];
+                String solvedString = parts[3];
+
+                // Convert some strings to different types
+                UUID uuid = UUID.fromString(id);
+                Date date = new SimpleDateFormat(
+                        "yyyy-MM-dd",
+                        Locale.getDefault()
+                ).parse(dateString);
+                boolean isSolved = (solvedString == "1");
+
+                // Now that we have all of the Crime properties we can
+                // make a new one and add it to the List
+                mCrimes.add(
+                        new Crime(
+                                uuid,
+                                title,
+                                date,
+                                isSolved
+                        )
+                );
+
+            }
+
+            // Data read in, so set the dataLoadedOnce flag to tru
+            mDataLoadedOnce = true;
+        } catch (Exception e) {
+            Log.e("Read CSV", e.toString());
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
