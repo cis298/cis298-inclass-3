@@ -130,7 +130,7 @@ public class CrimeListFragment extends Fragment {
             // knows how to create an Intent to get CrimeActivity started.
             // The method will return the intent we need to send to
             // startActivity.
-            Intent intent = CrimeActivity.newIntent(
+            Intent intent = CrimePagerActivity.newIntent(
                     getActivity(), // This fragments hosting activity (context)
                     mCrime.getId() // Crime id.
             );
