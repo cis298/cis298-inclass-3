@@ -18,4 +18,7 @@
     <string name="crime_date">
         Crime Date
     </string>
+    <string name="date_picker_title">
+        Date of crime:
+    </string>
 </resources>
