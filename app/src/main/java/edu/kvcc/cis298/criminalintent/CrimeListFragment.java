@@ -5,9 +5,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -18,9 +22,22 @@ import java.util.List;
 
 public class CrimeListFragment extends Fragment {
 
-    // Var to hold a reference to the RecyclerViewe
+    // Key to store the subtitle state on screen rotation
+    private static final String SAVED_SUBTITLE_VISIBLE = "subtitle";
+
+    // Var to hold a reference to the RecyclerView
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter;
+    // Bool to keep track of state of shown subtitle
+    private boolean mSubtitleVisible;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Must do this line to ensure that the Activity knows that
+        // there is a menu to show.
+        setHasOptionsMenu(true);
+    }
 
     @Nullable
     @Override
@@ -50,6 +67,13 @@ public class CrimeListFragment extends Fragment {
                 new LinearLayoutManager(getActivity())
         );
 
+        // Check the savedInstanceState for the subtitle status
+        if (savedInstanceState != null) {
+            mSubtitleVisible = savedInstanceState.getBoolean(
+                    SAVED_SUBTITLE_VISIBLE
+            );
+        }
+
         // Call the updateUI method to get the data into the RecyclerView
         updateUI();
 
@@ -61,6 +85,89 @@ public class CrimeListFragment extends Fragment {
     public void onResume() {
         super.onResume();
         updateUI();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Save out the subtitle status
+        outState.putBoolean(SAVED_SUBTITLE_VISIBLE, mSubtitleVisible);
+    }
+
+    // This will set the layout for the menu.
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // By convention do what the parent should
+        super.onCreateOptionsMenu(menu, inflater);
+        // Inflate the menu layout and attach it to the menu.
+        inflater.inflate(R.menu.fragment_crime_list, menu);
+
+        // Get the subtitle menu item and set the title to either
+        // show subtitle, or hide subtitle depending on what the
+        // value of the class level bool is.
+        MenuItem subtitleItem = menu.findItem(R.id.show_subtitle);
+        if (mSubtitleVisible) {
+            subtitleItem.setTitle(R.string.hide_subtitle);
+        } else {
+            subtitleItem.setTitle(R.string.show_subtitle);
+        }
+    }
+
+    // This gets called anytime any item in the menu is clicked.
+    // We will have to see what what clicked and then respond correctly.
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.new_crime:
+                // Make a new crime instance
+                Crime crime = new Crime();
+                // Add the new crime to the CrimeLab's list of crimes.
+                CrimeLab.get(getActivity()).addCrime(crime);
+                // Make a new intent to get the CrimePagerActivity started
+                Intent intent = CrimePagerActivity
+                        .newIntent(getActivity(), crime.getId());
+                // Start the Activity with the intent that we created.
+                startActivity(intent);
+                // Return True to say that there is no further processing
+                // needed as a response for this action.
+                return true;
+
+            case R.id.show_subtitle:
+                // Flip the value of the bool keeping track of the subtitle state
+                mSubtitleVisible = !mSubtitleVisible;
+                // This will tell android to re-draw the toolbar options
+                getActivity().invalidateOptionsMenu();
+                // Call the update Subtitle method to update the subtitle
+                updateSubtitle();
+                // Return true to signify we are done.
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    // Method to update the subtitle on the menu
+    private void updateSubtitle() {
+        // Get the CrimeLab so we have access to the list of crimes
+        CrimeLab crimeLab = CrimeLab.get(getActivity());
+        // Get the count of the crimes from the crime list
+        int crimeCount = crimeLab.getCrimes().size();
+        // Create the subtitle string from string resource and the crime count
+        // this will plug the count into the place holder in the subtitle.
+        String subtitle = getString(R.string.subtitle_format, crimeCount);
+
+        // Set the subtitle to null if we should not be showing it.
+        if (!mSubtitleVisible) {
+            subtitle = null;
+        }
+
+        // Get the hosting activity of this fragment
+        AppCompatActivity activity = (AppCompatActivity)getActivity();
+        // Get access to the supportActionBar (toolbar) and set the subtitle
+        // to the string that we just created.
+        activity.getSupportActionBar().setSubtitle(subtitle);
     }
 
     // Method to update the recycler view with data
@@ -75,7 +182,7 @@ public class CrimeListFragment extends Fragment {
                     .openRawResource(R.raw.crimes);
             crimeLab.loadCrimeList(csvStream);
             // Can optionally add the default crimes if desired.
-             crimeLab.addDefaultCrimes();
+//             crimeLab.addDefaultCrimes();
         }
 
 
@@ -95,6 +202,9 @@ public class CrimeListFragment extends Fragment {
             // Just need to tell it to update its data.
             mAdapter.notifyDataSetChanged();
         }
+
+        // Update the Subtitle in case the number of crimes has changed
+        updateSubtitle();
     }
 
     // This will be an inner class that our RecyclerView needs to operate.
